@@ -31,10 +31,10 @@ namespace UAVCoordinators
                 foreach (var wp in i.WaypointsLL)
                     DrawWaypoint(count++, c, PixelPosition(wp), e.Graphics);
 
-                if (i.CurrentPosition != null)
+                if (i.CurrentPixelPosition != null)
                 {
-                    PointF p = PixelPosition(i.CurrentPosition);
-                    e.Graphics.DrawImage(i.UavBitmap, new PointF(p.X - 33, p.Y - 33));
+                    PointF p = i.CurrentPixelPosition;
+                    e.Graphics.DrawImage(i.UavBitmap, new PointF(p.X - 33 + MapOrigin.X, p.Y - 33 + MapOrigin.Y));
                 }
             }
         }

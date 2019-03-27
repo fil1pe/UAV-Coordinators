@@ -39,7 +39,7 @@ namespace UAVCoordinators
 
             // Examples:
             Uavs.Add(new Uav(Color.Coral, this));
-            Uavs[0].CurrentPosition = new PointLatLng(-26.271, -48.8940);
+            Uavs[0].CurrentPixelPosition = new PointF(20, 20);
             List<PointLatLng> wp = new List<PointLatLng>();
             wp.Add(new PointLatLng(-26.271, -48.8930));
             wp.Add(new PointLatLng(-26.2718, -48.8945));
@@ -53,7 +53,9 @@ namespace UAVCoordinators
 
             // Set the map position:
             String[] mapPos = settings[0].Split(',');
+
             Map.Position = new PointLatLng(ParseDouble(mapPos[0]), ParseDouble(mapPos[1]));
+            InitGrid();
             settings.RemoveAt(0);
 
             //
@@ -122,7 +124,7 @@ namespace UAVCoordinators
                 }
         }
 
-        private void DrawContainer(PointF p1, int w, int h, string title, Graphics g)
+        private static void DrawContainer(PointF p1, int w, int h, string title, Graphics g)
         {
             Font f = new Font(new FontFamily("Arial"), 14);
             SizeF strSize = g.MeasureString(title, f);

@@ -8,6 +8,7 @@ namespace UAVCoordinators
     internal partial class Uav
     {
         internal PointLatLng CurrentPosition;
+        internal PointF CurrentPixelPosition;
         internal Color UavColor;
         private MainForm CoordinatorsForm;
 
