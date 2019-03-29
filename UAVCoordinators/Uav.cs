@@ -7,21 +7,32 @@ namespace UAVCoordinators
 {
     internal partial class Uav
     {
-        internal PointLatLng CurrentPosition;
-        internal PointF CurrentPixelPosition;
-        internal Color UavColor;
         private MainForm CoordinatorsForm;
-
-        internal Uav(Color c, MainForm coordinatorsForm)
+        public PointLatLng CurrentPosition;
+        public PointF CurrentPixelPosition;
+        private bool _hasPosition = false;
+        public bool HasPosition { get { return _hasPosition; } }
+        private Color _uavColor;
+        public Color UavColor
         {
-            UavColor = c;
+            get { return _uavColor; }
+            set
+            {
+                _uavColor = UavColor;
+                CoordinatorsForm.RefreshMap();
+            }
+        }
+
+        public Uav(Color c, MainForm coordinatorsForm)
+        {
+            _uavColor = c;
             CoordinatorsForm = coordinatorsForm;
             DrawUavBitmap();
         }
 
         private Bitmap UavDrawingBmp;
         private Bitmap _uavBitmap;
-        internal Bitmap UavBitmap { get { return _uavBitmap; } }
+        public Bitmap UavBitmap { get { return _uavBitmap; } }
 
         private void DrawUavBitmap()
         {
@@ -39,7 +50,7 @@ namespace UAVCoordinators
             g.DrawLine(new Pen(Color.FromArgb(190, 190, 190)), p3, p2);
             g.DrawLine(new Pen(Color.FromArgb(190, 190, 190)), p5, p2);
             g.DrawLine(new Pen(Color.FromArgb(180, 180, 180)), p6, p2);
-            g.DrawPolygon(new Pen(UavColor), new Point[] { p1, p3, p6, p5, p4, p2 });
+            g.DrawPolygon(new Pen(_uavColor), new Point[] { p1, p3, p6, p5, p4, p2 });
 
             _uavBitmap = new Bitmap(66, 66);
             g = Graphics.FromImage(UavBitmap);
@@ -47,7 +58,7 @@ namespace UAVCoordinators
         }
 
         private float _angle = 0;
-        internal float Angle
+        public float Angle
         {
             get { return _angle; }
             set
@@ -63,7 +74,7 @@ namespace UAVCoordinators
         }
 
         private List<PointLatLng> _waypointsLL;
-        internal List<PointLatLng> WaypointsLL
+        public List<PointLatLng> WaypointsLL
         {
             get { return _waypointsLL; }
             set

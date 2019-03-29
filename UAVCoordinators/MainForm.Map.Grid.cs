@@ -14,7 +14,7 @@ namespace UAVCoordinators
     public partial class MainForm : Form
     {
         private PointLatLng AuxPosition;
-        private float[] QSize = new float[]{ 10, 10 }; // Quadrant size
+        private float[] QSize; // Quadrant size
         private double[] GridCoordinates;
         private GMapOverlay GridOverlay = new GMapOverlay();
 

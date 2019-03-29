@@ -5,7 +5,7 @@ using System.Drawing;
 
 namespace UAVCoordinators
 {
-    public partial class Utils
+    internal partial class Utils
     {
         public static PointLatLng NewLLPoint(PointLatLng old, double dx, double dy)
         {

@@ -17,7 +17,6 @@ namespace UAVCoordinators
             InitializeComponent();
             ResizeRedraw = true;
             Size = new Size(640, 640);
-            MapOrigin = new PointF((float)Map.Width/2, (float)Map.Height/2);
             Paint += DrawTopPanel;
             Map.MapProvider = GMap.NET.MapProviders.GoogleSatelliteMapProvider.Instance;
             Map.Overlays.Add(MapOverlay);
@@ -25,11 +24,9 @@ namespace UAVCoordinators
             Map.ShowCenter = false;
             LoadSettings();
             Map.Paint += PaintOnMap;
-            Map.MouseDown += MouseDownOnMap;
-            Map.MouseMove += MouseMoveOnMap;
-            Map.MouseUp += MouseUpOnMap;
-            Map.Resize += MapResizedOrZoomed;
-            Map.MouseWheel += MapZoomed;
+            Map.OnMapDrag += DraggingResizingOrZoomingMap;
+            Map.OnMapZoomChanged += DraggingResizingOrZoomingMap;
+            Map.Resize += (sender, args) => { DraggingResizingOrZoomingMap(); };
             MouseClick += MouseClickOnTopPanel;
 
             for (int i = 0; i < 5; i++)
@@ -39,7 +36,6 @@ namespace UAVCoordinators
 
             // Examples:
             Uavs.Add(new Uav(Color.Coral, this));
-            Uavs[0].CurrentPixelPosition = new PointF(20, 20);
             List<PointLatLng> wp = new List<PointLatLng>();
             wp.Add(new PointLatLng(-26.271, -48.8930));
             wp.Add(new PointLatLng(-26.2718, -48.8945));
@@ -51,20 +47,24 @@ namespace UAVCoordinators
         {
             List<String> settings = File.ReadLines(@"Data\settings").ToList();
 
-            // Set the map position:
+            // Set map position:
             String[] mapPos = settings[0].Split(',');
-
             AuxPosition = Map.Position = new PointLatLng(ParseDouble(mapPos[0]), ParseDouble(mapPos[1]));
-            MapPixelPos = Map.MapProvider.Projection.FromLatLngToPixel(AuxPosition, (int)Map.Zoom);
+            settings.RemoveAt(0);
 
-            // Set the grid coordinates:
+            // Set cell size and grid coordinates:
+            String[] qSize = settings[0].Split(',');
+            QSize = new float[] { ParseFloat(qSize[0]), ParseFloat(qSize[1]) };
+
+            GPoint mapPixelPos = Map.MapProvider.Projection.FromLatLngToPixel(AuxPosition, (int)Map.Zoom);
+
             PointLatLng bottomLeftPoint = Map.MapProvider.Projection.FromPixelToLatLng(
-                new GPoint(MapPixelPos.X - Width / 2, MapPixelPos.Y + Height / 2)
-                , (int)Map.Zoom);
+                new GPoint(mapPixelPos.X - Width / 2, mapPixelPos.Y + Height / 2),
+                (int)Map.Zoom);
 
             PointLatLng topRightPoint = Map.MapProvider.Projection.FromPixelToLatLng(
-                new GPoint(MapPixelPos.X + Width / 2, MapPixelPos.Y - Height / 2)
-                , (int)Map.Zoom);
+                new GPoint(mapPixelPos.X + Width / 2, mapPixelPos.Y - Height / 2),
+                (int)Map.Zoom);
             
             GridCoordinates = new double[]{ bottomLeftPoint.Lat, topRightPoint.Lat, bottomLeftPoint.Lng, topRightPoint.Lng };
             InitGrid();

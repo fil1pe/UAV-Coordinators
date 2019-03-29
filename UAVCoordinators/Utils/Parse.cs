@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace UAVCoordinators
 {
-    public partial class Utils
+    internal partial class Utils
     {
         public static double ParseDouble(string str)
         {
