@@ -61,21 +61,15 @@ namespace UAVCoordinators
             g.DrawImage(bmp, p);
         }
 
+        private GPoint MapPixelPos;
 
-        private Bitmap TempBitmap = new Bitmap(20, 20);
-
-        private PointF PixelPosition(PointLatLng pos) // can/must be optimized
+        private PointF PixelPosition(PointLatLng pos)
         {
-            GMapMarker tempMarker = new GMarkerGoogle(pos, TempBitmap);
-            tempMarker.IsVisible = false;
-            MapOverlay.Markers.Add(tempMarker);
-            PointF ans = tempMarker.LocalPosition;
-            MapOverlay.Markers.Remove(tempMarker);
-
-            ans.X += MapOrigin.X + TempBitmap.Width/2;
-            ans.Y += MapOrigin.Y + TempBitmap.Height;
-
-            return ans;
+            GPoint temp = Map.MapProvider.Projection.FromLatLngToPixel(pos, (int)Map.Zoom);
+            return new PointF(
+                temp.X - MapPixelPos.X + MapOrigin.X,
+                temp.Y - MapPixelPos.Y + MapOrigin.Y
+            );
         }
         
         #region Map dragging control
@@ -107,6 +101,8 @@ namespace UAVCoordinators
         {
             MapOrigin.X = (float)Map.Width / 2;
             MapOrigin.Y = (float)Map.Height / 2;
+            MapPixelPos = Map.MapProvider.Projection.FromLatLngToPixel(Map.Position, (int)Map.Zoom);
+            Map.Invalidate();
         }
 
         private double MapZoom = -1;

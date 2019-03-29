@@ -54,8 +54,21 @@ namespace UAVCoordinators
             // Set the map position:
             String[] mapPos = settings[0].Split(',');
 
-            Map.Position = new PointLatLng(ParseDouble(mapPos[0]), ParseDouble(mapPos[1]));
+            AuxPosition = Map.Position = new PointLatLng(ParseDouble(mapPos[0]), ParseDouble(mapPos[1]));
+            MapPixelPos = Map.MapProvider.Projection.FromLatLngToPixel(AuxPosition, (int)Map.Zoom);
+
+            // Set the grid coordinates:
+            PointLatLng bottomLeftPoint = Map.MapProvider.Projection.FromPixelToLatLng(
+                new GPoint(MapPixelPos.X - Width / 2, MapPixelPos.Y + Height / 2)
+                , (int)Map.Zoom);
+
+            PointLatLng topRightPoint = Map.MapProvider.Projection.FromPixelToLatLng(
+                new GPoint(MapPixelPos.X + Width / 2, MapPixelPos.Y - Height / 2)
+                , (int)Map.Zoom);
+            
+            GridCoordinates = new double[]{ bottomLeftPoint.Lat, topRightPoint.Lat, bottomLeftPoint.Lng, topRightPoint.Lng };
             InitGrid();
+
             settings.RemoveAt(0);
 
             //

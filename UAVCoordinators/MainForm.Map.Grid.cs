@@ -20,8 +20,6 @@ namespace UAVCoordinators
 
         private void InitGrid()
         {
-            AuxPosition = Map.Position;
-            GridCoordinates = new double[] { AuxPosition.Lat - 0.001, AuxPosition.Lat + 0.001, AuxPosition.Lng - 0.001, AuxPosition.Lng + 0.001 };
             Map.Overlays.Add(GridOverlay);
 
             PointLatLng first = new PointLatLng(GridCoordinates[1], GridCoordinates[2]);
@@ -77,12 +75,23 @@ namespace UAVCoordinators
             GridOverlay.Polygons.Add(cell);
         }
 
-        public void MissionChanged(List<PointLatLng> waypointsLL)
+        public void RefreshGrid(PointLatLng[] points)
         {
-            //??
+            double[] newGridCoordinates = new double[] { GridCoordinates[0], GridCoordinates[1], GridCoordinates[2], GridCoordinates[3] };
+            foreach (PointLatLng i in points)
+            {
+                if (i.Lat < newGridCoordinates[0])
+                    newGridCoordinates[0] = i.Lat;
+                else if (i.Lat > newGridCoordinates[1])
+                    newGridCoordinates[1] = i.Lat;
+                if (i.Lng < newGridCoordinates[2])
+                    newGridCoordinates[2] = i.Lng;
+                else if (i.Lng > newGridCoordinates[3])
+                    newGridCoordinates[3] = i.Lng;
+            }
+            RefreshGrid(newGridCoordinates);
         }
-
-        // Expand the Grid:
+        
         private void RefreshGrid(double[] newGridCoordinates)
         {
             PointLatLng first = new PointLatLng(GridCoordinates[1], GridCoordinates[2]);
