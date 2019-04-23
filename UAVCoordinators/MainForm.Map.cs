@@ -24,6 +24,22 @@ namespace UAVCoordinators
             Map.OnMapDrag += DraggingResizingOrZoomingMap;
             Map.OnMapZoomChanged += DraggingResizingOrZoomingMap;
             Map.Resize += (sender, args) => { DraggingResizingOrZoomingMap(); };
+            
+            // ;-)
+            GPoint a = new GPoint(0, 10), b = new GPoint(0, 125);
+            PointLatLng lla = LatLngPosition(a), llb = LatLngPosition(b);
+            Map.Zoom = 19;
+            GPoint a1 = PixelPosition(lla), b1 = PixelPosition(llb);
+            Map.Zoom = 20;
+            GPoint a2 = PixelPosition(lla), b2 = PixelPosition(llb);
+            Map.Zoom = 21;
+            GPoint a3 = PixelPosition(lla), b3 = PixelPosition(llb);
+            System.Diagnostics.Debug.WriteLine("============================");
+            System.Diagnostics.Debug.WriteLine("Abstract coordinates => x: {0}\t{1}", a.X, b.X);
+            System.Diagnostics.Debug.WriteLine("            Zoom: 19 => x: {0}\t{1}", a1.X, b1.X);
+            System.Diagnostics.Debug.WriteLine("            Zoom: 20 => x: {0}\t{1}", a2.X, b2.X);
+            System.Diagnostics.Debug.WriteLine("            Zoom: 21 => x: {0}\t{1}", a3.X, b3.X);
+            System.Diagnostics.Debug.WriteLine("============================");
         }
 
         private void PaintOnMap(object sender, PaintEventArgs e)
