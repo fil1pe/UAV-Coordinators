@@ -12,21 +12,21 @@ namespace UAVCoordinators
 {
     public partial class MainForm : Form
     {
+        private delegate void ButtonClick(object sender, MouseEventArgs e);
+        
         private struct Button
         {
             public PointF Position { get; }
             public SizeF Size { get; }
 
-            public Button(MainForm form, PointF position, SizeF size)
+            public Button(MainForm form, PointF position, SizeF size, ButtonClick del)
             {
                 Position = position;
                 Size = size;
-
-                Button thisBtn = this;
                 form.MouseClick += (sender, e) =>
                 {
                     if (InsideRectangle(position, size.Width, size.Height, e.Location))
-                        form.ButtonClicked(thisBtn);
+                        del(sender, e);
                 };
             }
         }
@@ -116,18 +116,9 @@ namespace UAVCoordinators
                 }
                 else
                     e.Graphics.DrawImage(TopBtnIcons[i], p2);
-                TopPanelBtns.Add(new Button(this, p2, new SizeF(TopPanelButtonSize, TopPanelButtonSize)));
+                ButtonClick del = (sender, e) => { TopActiveBtn = i; Invalidate(); };
+                TopPanelBtns.Add(new Button(this, p2, new SizeF(TopPanelButtonSize, TopPanelButtonSize), del));
                 p1.X += spacing;
-            }
-        }
-
-        private void ButtonClicked(Button button)
-        {
-            int i = TopPanelBtns.IndexOf(button);
-            if (i != -1)
-            {
-                TopActiveBtn = i;
-                Invalidate();
             }
         }
 
