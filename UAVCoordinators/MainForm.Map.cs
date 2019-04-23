@@ -13,7 +13,18 @@ namespace UAVCoordinators
     public partial class MainForm : Form
     {
         private GMapOverlay MapOverlay = new GMapOverlay();
-        List<Uav> Uavs = new List<Uav>();
+
+        private void InitMap()
+        {
+            Map.MapProvider = GMap.NET.MapProviders.GoogleSatelliteMapProvider.Instance;
+            Map.Overlays.Add(MapOverlay);
+            Map.DragButton = MouseButtons.Left;
+            Map.ShowCenter = false;
+            Map.Paint += PaintOnMap;
+            Map.OnMapDrag += DraggingResizingOrZoomingMap;
+            Map.OnMapZoomChanged += DraggingResizingOrZoomingMap;
+            Map.Resize += (sender, args) => { DraggingResizingOrZoomingMap(); };
+        }
 
         private void PaintOnMap(object sender, PaintEventArgs e)
         {

@@ -6,7 +6,7 @@ namespace UAVCoordinators
 {
     internal partial class Utils
     {
-        public static bool InsideRectangle(PointF rectPos, int w, int h, PointF pos)
+        public static bool InsideRectangle(PointF rectPos, float w, float h, PointF pos)
         {
             return pos.X >= rectPos.X && pos.X <= rectPos.X + w && pos.Y >= rectPos.Y && pos.Y <= rectPos.Y + h;
         }

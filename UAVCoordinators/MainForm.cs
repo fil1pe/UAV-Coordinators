@@ -12,22 +12,35 @@ namespace UAVCoordinators
 {
     public partial class MainForm : Form
     {
+        private struct Button
+        {
+            public PointF Position { get; }
+            public SizeF Size { get; }
+
+            public Button(MainForm form, PointF position, SizeF size)
+            {
+                Position = position;
+                Size = size;
+
+                Button thisBtn = this;
+                form.MouseClick += (sender, e) =>
+                {
+                    if (InsideRectangle(position, size.Width, size.Height, e.Location))
+                        form.ButtonClicked(thisBtn);
+                };
+            }
+        }
+
+        private List<Uav> Uavs = new List<Uav>();
+
         public MainForm()
         {
             InitializeComponent();
             ResizeRedraw = true;
             Size = new Size(640, 640);
+            InitMap();
             Paint += DrawTopPanel;
-            Map.MapProvider = GMap.NET.MapProviders.GoogleSatelliteMapProvider.Instance;
-            Map.Overlays.Add(MapOverlay);
-            Map.DragButton = MouseButtons.Left;
-            Map.ShowCenter = false;
             LoadSettings();
-            Map.Paint += PaintOnMap;
-            Map.OnMapDrag += DraggingResizingOrZoomingMap;
-            Map.OnMapZoomChanged += DraggingResizingOrZoomingMap;
-            Map.Resize += (sender, args) => { DraggingResizingOrZoomingMap(); };
-            MouseClick += MouseClickOnTopPanel;
 
             for (int i = 0; i < 5; i++)
                 TopBtnIcons.Add(new Bitmap(@"Images\top-btn-" + i + ".png"));
@@ -45,15 +58,15 @@ namespace UAVCoordinators
 
         private void LoadSettings()
         {
-            List<String> settings = File.ReadLines(@"Data\settings").ToList();
+            List<string> settings = File.ReadLines(@"Data\settings").ToList();
 
             // Set map position:
-            String[] mapPos = settings[0].Split(',');
+            string[] mapPos = settings[0].Split(',');
             AuxPosition = Map.Position = new PointLatLng(ParseDouble(mapPos[0]), ParseDouble(mapPos[1]));
             settings.RemoveAt(0);
 
             // Set cell size and grid coordinates:
-            String[] qSize = settings[0].Split(',');
+            string[] qSize = settings[0].Split(',');
             QSize = new float[] { ParseFloat(qSize[0]), ParseFloat(qSize[1]) };
 
             GPoint mapPixelPos = Map.MapProvider.Projection.FromLatLngToPixel(AuxPosition, (int)Map.Zoom);
@@ -76,7 +89,7 @@ namespace UAVCoordinators
 
         private const int TopPanelHeight = 45;
         private const int TopPanelButtonSize = 30;
-        private List<PointF> TopPanelBtns;
+        private List<Button> TopPanelBtns;
         private int TopActiveBtn = 2;
         private List<Bitmap> TopBtnIcons = new List<Bitmap>();
 
@@ -89,7 +102,7 @@ namespace UAVCoordinators
 
             // Draw buttons:
             int btnsNum = 5;
-            TopPanelBtns = new List<PointF>();
+            TopPanelBtns = new List<Button>();
             float spacing = (float)ClientSize.Width / (1 + btnsNum);
             PointF p1 = new PointF(spacing, TopPanelHeight/2 - TopPanelButtonSize/2);
 
@@ -103,8 +116,18 @@ namespace UAVCoordinators
                 }
                 else
                     e.Graphics.DrawImage(TopBtnIcons[i], p2);
-                TopPanelBtns.Add(p2);
+                TopPanelBtns.Add(new Button(this, p2, new SizeF(TopPanelButtonSize, TopPanelButtonSize)));
                 p1.X += spacing;
+            }
+        }
+
+        private void ButtonClicked(Button button)
+        {
+            int i = TopPanelBtns.IndexOf(button);
+            if (i != -1)
+            {
+                TopActiveBtn = i;
+                Invalidate();
             }
         }
 
@@ -125,16 +148,6 @@ namespace UAVCoordinators
                     Map.Visible = false;
                     break;
             }
-        }
-
-        private void MouseClickOnTopPanel(object sender, MouseEventArgs e)
-        {
-            for (int i = 0; i < TopPanelBtns.Count; i++)
-                if (InsideRectangle(TopPanelBtns[i], TopPanelButtonSize, TopPanelButtonSize, e.Location))
-                {
-                    TopActiveBtn = i;
-                    Invalidate();
-                }
         }
 
         private static void DrawContainer(PointF p1, int w, int h, string title, Graphics g)
