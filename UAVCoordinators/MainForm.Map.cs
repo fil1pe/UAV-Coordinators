@@ -15,25 +15,8 @@ namespace UAVCoordinators
     {
         private GMapOverlay MapOverlay = new GMapOverlay();
         private double InitialZoom;
+        private GMapMarker InitialPosMarker;
         private SizeF MapSize;
-        private PointLatLng MapPosition;
-        private float T => (float)Pow(2, Map.Zoom - InitialZoom); // The coordinate transformation coefficient
-
-        /*// Transform the coordinates of a vector (point) from the default coordinate system to a specific zoom's one:
-        private PointF TransformCoordinates(PointF p, bool inverse = false)
-        {
-            float T = (float)Pow(2, Map.Zoom - 18); // The transformation coefficient
-            if (inverse) T = 1 / T;
-            return new PointF(T * p.X, T * p.Y);
-        }
-
-        private PointF TransformCoordinates(PointF p, double zoom)
-        {
-            float T1 = 1/(float)Pow(2, Map.Zoom - 18);
-            float T2 = (float)Pow(2, zoom - 18);
-            float T = T1 * T2;
-            return new PointF(T * p.X, T * p.Y);
-        }*/
 
         private void InitMap()
         {
@@ -56,20 +39,24 @@ namespace UAVCoordinators
 
         private void MapLoad(object sender, EventArgs e)
         {
-            MapPosition = Map.Position;
+            InitialPosMarker = new GMarkerGoogle(Map.Position, GMarkerGoogleType.arrow);
+            InitialPosMarker.IsVisible = false;
+            MapOverlay.Markers.Add(InitialPosMarker);
+            Origin = new PointF(Map.Width/2, Map.Height/2);
         }
 
-        private PointF Origin = new PointF(0, 0);
+        private PointF Origin;
 
-        private PointF Position(PointF abstractPos)
+        private PointF PixelPosition(PointF abstractPos)
         {
+            float T = (float)Pow(2, Map.Zoom - InitialZoom); // The coordinate transformation coefficient
             return new PointF(
-                (abstractPos.X + Origin.X) * T,
-                (abstractPos.Y + Origin.Y) * T
+                abstractPos.X * T + Origin.X,
+                abstractPos.Y * T + Origin.Y
             );
         }
 
-        #region Dragging map
+        #region Handling of moving, resizing and zooming of the map
 
         private PointF DragMousePos;
         private bool Dragging = false;
@@ -82,11 +69,10 @@ namespace UAVCoordinators
         {
             if (Dragging)
             {
-                MapPosition = Map.Position;
                 var oldMousePos = DragMousePos;
                 DragMousePos = e.Location;
-                Origin.X += (DragMousePos.X - oldMousePos.X)/T;
-                Origin.Y += (DragMousePos.Y - oldMousePos.Y)/T;
+                Origin.X += DragMousePos.X - oldMousePos.X;
+                Origin.Y += DragMousePos.Y - oldMousePos.Y;
             }
         }
         private void MouseReleasedOnMap(object sender, MouseEventArgs e)
@@ -95,27 +81,23 @@ namespace UAVCoordinators
         }
         private void MapResized(object sender, EventArgs e)
         {
-            MapPosition = Map.Position;
             SizeF oldMapSize = MapSize;
             MapSize = Map.Size;
-            Origin.X += (MapSize.Width - oldMapSize.Width) / (2*T);
-            Origin.Y += (MapSize.Height - oldMapSize.Height) / (2*T);
+            Origin.X += (MapSize.Width - oldMapSize.Width) / 2;
+            Origin.Y += (MapSize.Height - oldMapSize.Height) / 2;
         }
         private void MapZoomed()
         {
-            GPoint p0 = Map.MapProvider.Projection.FromLatLngToPixel(MapPosition, (int)InitialZoom);
-            MapPosition = Map.Position;
-            GPoint pf = Map.MapProvider.Projection.FromLatLngToPixel(MapPosition, (int)InitialZoom);
-            Origin.X -= pf.X - p0.X;
-            Origin.Y -= pf.Y - p0.Y;
+            Origin = ToPointF(PixelPosition(InitialPosMarker.Position));
         }
 
         #endregion
 
         private void PaintOnMap(object sender, PaintEventArgs e)
         {
-            PointF test = Position(new PointF(0, 0));
-            e.Graphics.FillEllipse(Brushes.Black, test.X, test.Y, 50, 50);
+            PointF t1 = PixelPosition(new PointF(0, 0));
+            PointF t2 = PixelPosition(new PointF(20, 100));
+            e.Graphics.DrawLine(new Pen(Brushes.Aqua, 5), t1, t2);
 
             foreach (Uav i in Uavs)
             {
@@ -165,7 +147,7 @@ namespace UAVCoordinators
 
         private PointLatLng LatLngPosition(GPoint pos) { return Map.FromLocalToLatLng((int)pos.X, (int)pos.Y); }
 
-        // Expand grid if necessary:
+        // Expand the grid if necessary:
         private void DraggingResizingOrZoomingMap()
         {
             GPoint p1 = PixelPosition(Map.Position);

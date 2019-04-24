@@ -173,7 +173,7 @@ namespace UAVCoordinators
             settings.Add(mapPos.Lat + "," + mapPos.Lng);
             settings.Add("" + Map.Zoom);
             settings.Add(QSize.Width + "," + QSize.Height);
-            //File.WriteAllLines(@"Data\settings", settings);
+            File.WriteAllLines(@"Data\settings", settings);
 
             // Leave the program:
             Environment.Exit(0);
