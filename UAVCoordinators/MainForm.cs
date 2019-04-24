@@ -20,7 +20,7 @@ namespace UAVCoordinators
             public SizeF Size { get; }
             private MainForm _Form;
             private MouseEventHandler ClickEvent;
-            public void RemoveEvent() { _Form.MouseClick -= ClickEvent; }
+            public void RemoveEvents() { _Form.MouseClick -= ClickEvent; }
 
             public Button(MainForm form, PointF position, SizeF size, ButtonClick del)
             {
@@ -111,7 +111,7 @@ namespace UAVCoordinators
 
             // Draw buttons:
             int btnsNum = 5;
-            foreach (var i in TopPanelBtns) i.RemoveEvent();
+            foreach (var i in TopPanelBtns) i.RemoveEvents();
             TopPanelBtns = new List<Button>();
             float spacing = (float)ClientSize.Width / (1 + btnsNum);
             PointF p1 = new PointF(spacing, TopPanelHeight/2 - TopPanelButtonSize/2);
@@ -173,7 +173,7 @@ namespace UAVCoordinators
             settings.Add(mapPos.Lat + "," + mapPos.Lng);
             settings.Add("" + Map.Zoom);
             settings.Add(QSize.Width + "," + QSize.Height);
-            File.WriteAllLines(@"Data\settings", settings);
+            //File.WriteAllLines(@"Data\settings", settings);
 
             // Leave the program:
             Environment.Exit(0);

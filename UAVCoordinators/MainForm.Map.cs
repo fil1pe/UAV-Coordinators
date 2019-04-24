@@ -16,6 +16,7 @@ namespace UAVCoordinators
         private GMapOverlay MapOverlay = new GMapOverlay();
         private double InitialZoom;
         private SizeF MapSize;
+        private PointLatLng MapPosition;
         private float T => (float)Pow(2, Map.Zoom - InitialZoom); // The coordinate transformation coefficient
 
         /*// Transform the coordinates of a vector (point) from the default coordinate system to a specific zoom's one:
@@ -50,7 +51,15 @@ namespace UAVCoordinators
             Map.Resize += MapResized;
             MapSize = Map.Size;
             Map.Load += MapLoad;
+            Map.OnMapZoomChanged += MapZoomed;
         }
+
+        private void MapLoad(object sender, EventArgs e)
+        {
+            MapPosition = Map.Position;
+        }
+
+        private PointF Origin = new PointF(0, 0);
 
         private PointF Position(PointF abstractPos)
         {
@@ -59,12 +68,6 @@ namespace UAVCoordinators
                 (abstractPos.Y + Origin.Y) * T
             );
         }
-
-        private void MapLoad(object sender, EventArgs e)
-        {
-        }
-
-        private PointF Origin = new PointF(0, 0);
 
         #region Dragging map
 
@@ -79,6 +82,7 @@ namespace UAVCoordinators
         {
             if (Dragging)
             {
+                MapPosition = Map.Position;
                 var oldMousePos = DragMousePos;
                 DragMousePos = e.Location;
                 Origin.X += (DragMousePos.X - oldMousePos.X)/T;
@@ -91,10 +95,19 @@ namespace UAVCoordinators
         }
         private void MapResized(object sender, EventArgs e)
         {
+            MapPosition = Map.Position;
             SizeF oldMapSize = MapSize;
             MapSize = Map.Size;
             Origin.X += (MapSize.Width - oldMapSize.Width) / (2*T);
             Origin.Y += (MapSize.Height - oldMapSize.Height) / (2*T);
+        }
+        private void MapZoomed()
+        {
+            GPoint p0 = Map.MapProvider.Projection.FromLatLngToPixel(MapPosition, (int)InitialZoom);
+            MapPosition = Map.Position;
+            GPoint pf = Map.MapProvider.Projection.FromLatLngToPixel(MapPosition, (int)InitialZoom);
+            Origin.X -= pf.X - p0.X;
+            Origin.Y -= pf.Y - p0.Y;
         }
 
         #endregion
