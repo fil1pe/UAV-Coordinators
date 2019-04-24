@@ -14,7 +14,7 @@ namespace UAVCoordinators
     public partial class MainForm : Form
     {
         private PointLatLng AuxPosition;
-        private float[] QSize; // Quadrant size
+        private SizeF QSize; // Quadrant size
         private double[] GridCoordinates;
         private GMapOverlay GridOverlay = new GMapOverlay();
 
@@ -29,13 +29,13 @@ namespace UAVCoordinators
                 while (first.Lng < GridCoordinates[3])
                 {
                     DrawCell(first);
-                    first = NewLLPoint(first, QSize[0], 0, AuxPosition.Lat);
+                    first = NewLLPoint(first, QSize.Width, 0, AuxPosition.Lat);
                 }
 
                 GridCoordinates[3] = first.Lng;
 
                 first.Lng = GridCoordinates[2];
-                first = NewLLPoint(first, 0, -QSize[1], AuxPosition.Lat);
+                first = NewLLPoint(first, 0, -QSize.Height, AuxPosition.Lat);
             }
             GridCoordinates[0] = first.Lat;
         }
@@ -46,9 +46,9 @@ namespace UAVCoordinators
             List<PointLatLng> points = new List<PointLatLng>();
 
             points.Add(first);
-            points.Add(NewLLPoint(points[0], QSize[0], 0, AuxPosition.Lat));
-            points.Add(NewLLPoint(points[0], QSize[0], -QSize[1], AuxPosition.Lat));
-            points.Add(NewLLPoint(points[0], 0, -QSize[1], AuxPosition.Lat));
+            points.Add(NewLLPoint(points[0], QSize.Width, 0, AuxPosition.Lat));
+            points.Add(NewLLPoint(points[0], QSize.Width, -QSize.Height, AuxPosition.Lat));
+            points.Add(NewLLPoint(points[0], 0, -QSize.Height, AuxPosition.Lat));
 
             DrawCellPolygon(new GMapPolygon(points, "a grid cell"));
         }
@@ -59,9 +59,9 @@ namespace UAVCoordinators
             List<PointLatLng> points = new List<PointLatLng>();
 
             points.Add(first);
-            points.Add(NewLLPoint(points[0], -QSize[0], 0, AuxPosition.Lat));
-            points.Add(NewLLPoint(points[0], -QSize[0], -QSize[1], AuxPosition.Lat));
-            points.Add(NewLLPoint(points[0], 0, -QSize[1], AuxPosition.Lat));
+            points.Add(NewLLPoint(points[0], -QSize.Width, 0, AuxPosition.Lat));
+            points.Add(NewLLPoint(points[0], -QSize.Width, -QSize.Height, AuxPosition.Lat));
+            points.Add(NewLLPoint(points[0], 0, -QSize.Height, AuxPosition.Lat));
 
             DrawCellPolygon(new GMapPolygon(points, "a grid cell"));
         }
@@ -97,11 +97,11 @@ namespace UAVCoordinators
             PointLatLng first = new PointLatLng(GridCoordinates[1], GridCoordinates[2]);
             while (first.Lat < newGridCoordinates[1])
             {
-                first = NewLLPoint(first, 0, QSize[1], AuxPosition.Lat);
+                first = NewLLPoint(first, 0, QSize.Height, AuxPosition.Lat);
                 while (first.Lng < GridCoordinates[3])
                 {
                     DrawCell(first);
-                    first = NewLLPoint(first, QSize[0], 0, AuxPosition.Lat);
+                    first = NewLLPoint(first, QSize.Width, 0, AuxPosition.Lat);
                 }
                 first.Lng = GridCoordinates[2];
             }
@@ -114,10 +114,10 @@ namespace UAVCoordinators
                 while (first.Lng < GridCoordinates[3])
                 {
                     DrawCell(first);
-                    first = NewLLPoint(first, QSize[0], 0, AuxPosition.Lat);
+                    first = NewLLPoint(first, QSize.Width, 0, AuxPosition.Lat);
                 }
                 first.Lng = GridCoordinates[2];
-                first = NewLLPoint(first, 0, -QSize[1], AuxPosition.Lat);
+                first = NewLLPoint(first, 0, -QSize.Height, AuxPosition.Lat);
             }
             GridCoordinates[0] = first.Lat;
 
@@ -128,11 +128,11 @@ namespace UAVCoordinators
                 while (first.Lng > newGridCoordinates[2])
                 {
                     DrawCellR(first);
-                    first = NewLLPoint(first, -QSize[0], 0, AuxPosition.Lat);
+                    first = NewLLPoint(first, -QSize.Width, 0, AuxPosition.Lat);
                 }
                 newGridCoordinates[2] = first.Lng;
                 first.Lng = GridCoordinates[2];
-                first = NewLLPoint(first, 0, -QSize[1], AuxPosition.Lat);
+                first = NewLLPoint(first, 0, -QSize.Height, AuxPosition.Lat);
             }
             GridCoordinates[2] = newGridCoordinates[2];
 
@@ -143,11 +143,11 @@ namespace UAVCoordinators
                 while (first.Lng < newGridCoordinates[3])
                 {
                     DrawCell(first);
-                    first = NewLLPoint(first, QSize[0], 0, AuxPosition.Lat);
+                    first = NewLLPoint(first, QSize.Width, 0, AuxPosition.Lat);
                 }
                 newGridCoordinates[3] = first.Lng;
                 first.Lng = GridCoordinates[3];
-                first = NewLLPoint(first, 0, -QSize[1], AuxPosition.Lat);
+                first = NewLLPoint(first, 0, -QSize.Height, AuxPosition.Lat);
             }
             GridCoordinates[3] = newGridCoordinates[3];
         }

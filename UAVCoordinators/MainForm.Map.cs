@@ -165,8 +165,6 @@ namespace UAVCoordinators
             RefreshGrid(new PointLatLng[] { LatLngPosition(p1), LatLngPosition(p2) });
         }
 
-        private void FormHasClosed(object sender, FormClosedEventArgs e) { Environment.Exit(0); }
-
         internal void RefreshMap() { Map.Invalidate(); }
     }
 }

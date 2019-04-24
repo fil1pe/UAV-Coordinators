@@ -40,6 +40,7 @@ namespace UAVCoordinators
 
         public MainForm()
         {
+            System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo("en-US");
             InitializeComponent();
             ResizeRedraw = true;
             Size = new Size(640, 640);
@@ -70,9 +71,14 @@ namespace UAVCoordinators
             AuxPosition = Map.Position = new PointLatLng(ParseDouble(mapPos[0]), ParseDouble(mapPos[1]));
             settings.RemoveAt(0);
 
+            // Set map zoom:
+            InitialZoom = ParseDouble(settings[0]);
+            Map.Zoom = InitialZoom;
+            settings.RemoveAt(0);
+
             // Set cell size and grid coordinates:
             string[] qSize = settings[0].Split(',');
-            QSize = new float[] { ParseFloat(qSize[0]), ParseFloat(qSize[1]) };
+            QSize = new SizeF (ParseFloat(qSize[0]), ParseFloat(qSize[1]));
 
             GPoint mapPixelPos = Map.MapProvider.Projection.FromLatLngToPixel(AuxPosition, (int)Map.Zoom);
 
@@ -87,11 +93,6 @@ namespace UAVCoordinators
             GridCoordinates = new double[]{ bottomLeftPoint.Lat, topRightPoint.Lat, bottomLeftPoint.Lng, topRightPoint.Lng };
             InitGrid();
 
-            settings.RemoveAt(0);
-
-            // Set map zoom:
-            InitialZoom = ParseDouble(settings[0]);
-            Map.Zoom = InitialZoom;
             settings.RemoveAt(0);
         }
 
@@ -162,6 +163,20 @@ namespace UAVCoordinators
                 p4 = new PointF(p1.X + w, p1.Y + h),
                 p5 = new PointF(p1.X, p1.Y + h);
             g.DrawLines(new Pen(Color.White, 2), new PointF[] { p2, p3, p4, p5, p1 });
+        }
+
+        private void FormHasClosed(object sender, FormClosedEventArgs e)
+        {
+            // Save current settings to file:
+            List<string> settings = new List<string>();
+            PointLatLng mapPos = Map.Position;
+            settings.Add(mapPos.Lat + "," + mapPos.Lng);
+            settings.Add("" + Map.Zoom);
+            settings.Add(QSize.Width + "," + QSize.Height);
+            File.WriteAllLines(@"Data\settings", settings);
+
+            // Leave the program:
+            Environment.Exit(0);
         }
     }
 }
