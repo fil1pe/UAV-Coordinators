@@ -19,6 +19,7 @@ namespace UAVCoordinators
             set
             {
                 _uavColor = UavColor;
+                DrawUavBitmap();
                 CoordinatorsForm.RefreshMap();
             }
         }
@@ -74,7 +75,6 @@ namespace UAVCoordinators
         }
 
         private List<PointLatLng> _waypointsLL;
-        private List<PointF> _waypointsP;
         public List<PointLatLng> WaypointsLL
         {
             get { return _waypointsLL; }
@@ -82,9 +82,7 @@ namespace UAVCoordinators
             {
                 _waypointsLL = value;
                 CoordinatorsForm.RefreshMap();
-                // do something on _waypointsP
             }
         }
-        public List<PointF> WaypointsP => _waypointsP;
     }
 }

@@ -142,15 +142,29 @@ namespace UAVCoordinators
             {
                 case 0:
                     Map.Visible = false;
-                    DrawContainer(new PointF(BodyPadding.Width, TopPanelHeight + BodyPadding.Height), ClientSize.Width - 2*BodyPadding.Width, ClientSize.Height - TopPanelHeight - 2*BodyPadding.Height, "Logs", g);
+                    DrawContainer("Logs", g);
+                    break;
+                case 1:
+                    Map.Visible = false;
+                    DrawContainer("Connections", g);
                     break;
                 case 2:
                     Map.Visible = true;
                     break;
+                case 3:
+                    Map.Visible = false;
+                    DrawContainer("Settings", g);
+                    break;
                 default:
                     Map.Visible = false;
+                    DrawContainer("About", g);
                     break;
             }
+        }
+
+        private void DrawContainer(string s, Graphics g)
+        {
+            DrawContainer(new PointF(BodyPadding.Width, TopPanelHeight + BodyPadding.Height), ClientSize.Width - 2 * BodyPadding.Width, ClientSize.Height - TopPanelHeight - 2 * BodyPadding.Height, s, g);
         }
 
         private static void DrawContainer(PointF p1, int w, int h, string title, Graphics g)

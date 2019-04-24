@@ -93,6 +93,15 @@ namespace UAVCoordinators
 
         #endregion
 
+        private GPoint PixelPosition(PointLatLng pos) { return Map.FromLatLngToLocal(pos); }
+
+        internal PointF AbstractPosition(PointLatLng pos)
+        {
+            float T = (float)Pow(2, Map.Zoom - InitialZoom);
+            GPoint gp = PixelPosition(pos);
+            return new PointF((gp.X - Origin.X)/T, (gp.Y - Origin.Y)/T);
+        }
+
         private void PaintOnMap(object sender, PaintEventArgs e)
         {
             PointF t1 = PixelPosition(new PointF(0, 0));
@@ -107,6 +116,7 @@ namespace UAVCoordinators
                 {
                     PointF p1 = ToPointF(PixelPosition(i.WaypointsLL[j])),
                         p2 = ToPointF(PixelPosition(i.WaypointsLL[j+1]));
+                    System.Diagnostics.Debug.WriteLine("{0} {1}", p1, p2);
                     e.Graphics.DrawLine(new Pen(c, 3), p1, p2);
                 }
                 int count = 1;
@@ -142,8 +152,6 @@ namespace UAVCoordinators
 
             g.DrawImage(bmp, ToPointF(p));
         }
-
-        private GPoint PixelPosition(PointLatLng pos) { return Map.FromLatLngToLocal(pos); }
 
         private PointLatLng LatLngPosition(GPoint pos) { return Map.FromLocalToLatLng((int)pos.X, (int)pos.Y); }
 
