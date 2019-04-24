@@ -14,8 +14,11 @@ namespace UAVCoordinators
     public partial class MainForm : Form
     {
         private GMapOverlay MapOverlay = new GMapOverlay();
-        
-        // Transform the coordinates of a vector (point) from the default coordinate system to a specific zoom's one:
+        private double InitialZoom;
+        private SizeF MapSize;
+        private float T => (float)Pow(2, Map.Zoom - InitialZoom); // The coordinate transformation coefficient
+
+        /*// Transform the coordinates of a vector (point) from the default coordinate system to a specific zoom's one:
         private PointF TransformCoordinates(PointF p, bool inverse = false)
         {
             float T = (float)Pow(2, Map.Zoom - 18); // The transformation coefficient
@@ -29,7 +32,7 @@ namespace UAVCoordinators
             float T2 = (float)Pow(2, zoom - 18);
             float T = T1 * T2;
             return new PointF(T * p.X, T * p.Y);
-        }
+        }*/
 
         private void InitMap()
         {
@@ -46,14 +49,19 @@ namespace UAVCoordinators
             Map.MouseUp += MouseReleasedOnMap;
             Map.Resize += MapResized;
             MapSize = Map.Size;
-            Map.Load += teste;
-            MapZoom = Map.Zoom;
+            Map.Load += MapLoad;
         }
 
-        private void teste(object sender, EventArgs e)
+        private PointF Position(PointF abstractPos)
         {
-            MapPos = ToPointF(Map.PositionPixel);
-            System.Diagnostics.Debug.WriteLine(MapPos);
+            return new PointF(
+                (abstractPos.X + Origin.X) * T,
+                (abstractPos.Y + Origin.Y) * T
+            );
+        }
+
+        private void MapLoad(object sender, EventArgs e)
+        {
         }
 
         private PointF Origin = new PointF(0, 0);
@@ -62,9 +70,6 @@ namespace UAVCoordinators
 
         private PointF DragMousePos;
         private bool Dragging = false;
-        private SizeF MapSize;
-        private PointF MapPos;
-        private double MapZoom;
         private void MouseDownOnMap(object sender, MouseEventArgs e)
         {
             Dragging = true;
@@ -76,8 +81,8 @@ namespace UAVCoordinators
             {
                 var oldMousePos = DragMousePos;
                 DragMousePos = e.Location;
-                Origin.X += DragMousePos.X - oldMousePos.X;
-                Origin.Y += DragMousePos.Y - oldMousePos.Y;
+                Origin.X += (DragMousePos.X - oldMousePos.X)/T;
+                Origin.Y += (DragMousePos.Y - oldMousePos.Y)/T;
             }
         }
         private void MouseReleasedOnMap(object sender, MouseEventArgs e)
@@ -88,15 +93,16 @@ namespace UAVCoordinators
         {
             SizeF oldMapSize = MapSize;
             MapSize = Map.Size;
-            Origin.X += (MapSize.Width - oldMapSize.Width) / 2;
-            Origin.Y += (MapSize.Height - oldMapSize.Height) / 2;
+            Origin.X += (MapSize.Width - oldMapSize.Width) / (2*T);
+            Origin.Y += (MapSize.Height - oldMapSize.Height) / (2*T);
         }
 
         #endregion
 
         private void PaintOnMap(object sender, PaintEventArgs e)
         {
-            e.Graphics.FillEllipse(Brushes.Black, Origin.X, Origin.Y, 50, 50);
+            PointF test = Position(new PointF(0, 0));
+            e.Graphics.FillEllipse(Brushes.Black, test.X, test.Y, 50, 50);
 
             foreach (Uav i in Uavs)
             {

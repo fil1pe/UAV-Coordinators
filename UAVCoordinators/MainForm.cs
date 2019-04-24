@@ -89,7 +89,10 @@ namespace UAVCoordinators
 
             settings.RemoveAt(0);
 
-            //
+            // Set map zoom:
+            InitialZoom = ParseDouble(settings[0]);
+            Map.Zoom = InitialZoom;
+            settings.RemoveAt(0);
         }
 
         private const int TopPanelHeight = 45;
