@@ -7,12 +7,29 @@ using GMap.NET;
 using GMap.NET.WindowsForms;
 using GMap.NET.WindowsForms.Markers;
 using static UAVCoordinators.Utils;
+using static System.Math;
 
 namespace UAVCoordinators
 {
     public partial class MainForm : Form
     {
         private GMapOverlay MapOverlay = new GMapOverlay();
+        
+        // Transform the coordinates of a vector (point) from the default coordinate system to a specific zoom's one:
+        private PointF TransformCoordinates(PointF p, bool inverse = false)
+        {
+            float T = (float)Pow(2, Map.Zoom - 18); // The transformation coefficient
+            if (inverse) T = 1 / T;
+            return new PointF(T * p.X, T * p.Y);
+        }
+
+        private PointF TransformCoordinates(PointF p, double zoom)
+        {
+            float T1 = 1/(float)Pow(2, Map.Zoom - 18);
+            float T2 = (float)Pow(2, zoom - 18);
+            float T = T1 * T2;
+            return new PointF(T * p.X, T * p.Y);
+        }
 
         private void InitMap()
         {
@@ -24,26 +41,63 @@ namespace UAVCoordinators
             Map.OnMapDrag += DraggingResizingOrZoomingMap;
             Map.OnMapZoomChanged += DraggingResizingOrZoomingMap;
             Map.Resize += (sender, args) => { DraggingResizingOrZoomingMap(); };
-            
-            // ;-)
-            GPoint a = new GPoint(0, 10), b = new GPoint(0, 125);
-            PointLatLng lla = LatLngPosition(a), llb = LatLngPosition(b);
-            Map.Zoom = 19;
-            GPoint a1 = PixelPosition(lla), b1 = PixelPosition(llb);
-            Map.Zoom = 20;
-            GPoint a2 = PixelPosition(lla), b2 = PixelPosition(llb);
-            Map.Zoom = 21;
-            GPoint a3 = PixelPosition(lla), b3 = PixelPosition(llb);
-            System.Diagnostics.Debug.WriteLine("============================");
-            System.Diagnostics.Debug.WriteLine("Abstract coordinates => x: {0}\t{1}", a.X, b.X);
-            System.Diagnostics.Debug.WriteLine("            Zoom: 19 => x: {0}\t{1}", a1.X, b1.X);
-            System.Diagnostics.Debug.WriteLine("            Zoom: 20 => x: {0}\t{1}", a2.X, b2.X);
-            System.Diagnostics.Debug.WriteLine("            Zoom: 21 => x: {0}\t{1}", a3.X, b3.X);
-            System.Diagnostics.Debug.WriteLine("============================");
+            Map.MouseDown += MouseDownOnMap;
+            Map.MouseMove += MouseMoveOnMap;
+            Map.MouseUp += MouseReleasedOnMap;
+            Map.Resize += MapResized;
+            MapSize = Map.Size;
+            Map.Load += teste;
+            MapZoom = Map.Zoom;
         }
+
+        private void teste(object sender, EventArgs e)
+        {
+            MapPos = ToPointF(Map.PositionPixel);
+            System.Diagnostics.Debug.WriteLine(MapPos);
+        }
+
+        private PointF Origin = new PointF(0, 0);
+
+        #region Dragging map
+
+        private PointF DragMousePos;
+        private bool Dragging = false;
+        private SizeF MapSize;
+        private PointF MapPos;
+        private double MapZoom;
+        private void MouseDownOnMap(object sender, MouseEventArgs e)
+        {
+            Dragging = true;
+            DragMousePos = e.Location;
+        }
+        private void MouseMoveOnMap(object sender, MouseEventArgs e)
+        {
+            if (Dragging)
+            {
+                var oldMousePos = DragMousePos;
+                DragMousePos = e.Location;
+                Origin.X += DragMousePos.X - oldMousePos.X;
+                Origin.Y += DragMousePos.Y - oldMousePos.Y;
+            }
+        }
+        private void MouseReleasedOnMap(object sender, MouseEventArgs e)
+        {
+            Dragging = false;
+        }
+        private void MapResized(object sender, EventArgs e)
+        {
+            SizeF oldMapSize = MapSize;
+            MapSize = Map.Size;
+            Origin.X += (MapSize.Width - oldMapSize.Width) / 2;
+            Origin.Y += (MapSize.Height - oldMapSize.Height) / 2;
+        }
+
+        #endregion
 
         private void PaintOnMap(object sender, PaintEventArgs e)
         {
+            e.Graphics.FillEllipse(Brushes.Black, Origin.X, Origin.Y, 50, 50);
+
             foreach (Uav i in Uavs)
             {
                 Color c = i.UavColor;

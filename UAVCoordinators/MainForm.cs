@@ -18,16 +18,21 @@ namespace UAVCoordinators
         {
             public PointF Position { get; }
             public SizeF Size { get; }
+            private MainForm _Form;
+            private MouseEventHandler ClickEvent;
+            public void RemoveEvent() { _Form.MouseClick -= ClickEvent; }
 
             public Button(MainForm form, PointF position, SizeF size, ButtonClick del)
             {
                 Position = position;
                 Size = size;
-                form.MouseClick += (sender, e) =>
+                _Form = form;
+                ClickEvent = (sender, e) =>
                 {
                     if (InsideRectangle(position, size.Width, size.Height, e.Location))
                         del(sender, e);
                 };
+                form.MouseClick += ClickEvent;
             }
         }
 
@@ -89,7 +94,7 @@ namespace UAVCoordinators
 
         private const int TopPanelHeight = 45;
         private const int TopPanelButtonSize = 30;
-        private List<Button> TopPanelBtns;
+        private List<Button> TopPanelBtns= new List<Button>();
         private int TopActiveBtn = 2;
         private List<Bitmap> TopBtnIcons = new List<Bitmap>();
 
@@ -102,6 +107,7 @@ namespace UAVCoordinators
 
             // Draw buttons:
             int btnsNum = 5;
+            foreach (var i in TopPanelBtns) i.RemoveEvent();
             TopPanelBtns = new List<Button>();
             float spacing = (float)ClientSize.Width / (1 + btnsNum);
             PointF p1 = new PointF(spacing, TopPanelHeight/2 - TopPanelButtonSize/2);
@@ -116,8 +122,10 @@ namespace UAVCoordinators
                 }
                 else
                     e.Graphics.DrawImage(TopBtnIcons[i], p2);
-                ButtonClick del = (sender, e) => { TopActiveBtn = i; Invalidate(); };
-                TopPanelBtns.Add(new Button(this, p2, new SizeF(TopPanelButtonSize, TopPanelButtonSize), del));
+                int btNum = i;
+                TopPanelBtns.Add(new Button(this, p2, new SizeF(TopPanelButtonSize, TopPanelButtonSize),
+                    (x, y) => { TopActiveBtn = btNum; Invalidate(); }
+                ));
                 p1.X += spacing;
             }
         }
