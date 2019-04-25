@@ -47,6 +47,7 @@ namespace UAVCoordinators
             InitMap();
             Paint += DrawTopPanel;
             LoadSettings();
+            InitHiddenComponents();
 
             for (int i = 0; i < 5; i++)
                 TopBtnIcons.Add(new Bitmap(@"Images\top-btn-" + i + ".png"));
@@ -134,6 +135,14 @@ namespace UAVCoordinators
             }
         }
 
+        #region Hidden components
+
+        private void InitHiddenComponents()
+        {
+        }
+
+        #endregion
+
         private Size BodyPadding = new Size(20, 20);
 
         private void TopBtnAction(int btnNum, Graphics g)
@@ -179,11 +188,22 @@ namespace UAVCoordinators
             g.DrawLines(new Pen(Color.White, 2), new PointF[] { p2, p3, p4, p5, p1 });
         }
 
-        private void FormHasClosed(object sender, FormClosedEventArgs e)
+        private void ClosingForm(object sender, FormClosingEventArgs e)
         {
             // Save current settings to file:
             List<string> settings = new List<string>();
             PointLatLng mapPos = Map.Position;
+            var dialogResult = MessageBox.Show("Do you want to save your workspace?", "Confirmation", MessageBoxButtons.YesNoCancel);
+            if (dialogResult == DialogResult.Yes)
+            {
+                mapPos = InitialPosMarker.Position;
+                //save variables
+            }
+            else if (dialogResult == DialogResult.Cancel)
+            {
+                e.Cancel = true;
+                return;
+            }
             settings.Add(mapPos.Lat + "," + mapPos.Lng);
             settings.Add("" + Map.Zoom);
             settings.Add(QSize.Width + "," + QSize.Height);

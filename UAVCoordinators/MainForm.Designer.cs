@@ -58,7 +58,7 @@
             this.Controls.Add(this.Map);
             this.Name = "Form1";
             this.Text = "UAV Coordinators";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.FormHasClosed);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ClosingForm);
             this.ResumeLayout(false);
 
         }

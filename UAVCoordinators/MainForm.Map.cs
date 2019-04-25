@@ -62,6 +62,7 @@ namespace UAVCoordinators
         private bool Dragging = false;
         private void MouseDownOnMap(object sender, MouseEventArgs e)
         {
+            if (e.Button != MouseButtons.Left) return;
             Dragging = true;
             DragMousePos = e.Location;
         }
@@ -116,7 +117,6 @@ namespace UAVCoordinators
                 {
                     PointF p1 = ToPointF(PixelPosition(i.WaypointsLL[j])),
                         p2 = ToPointF(PixelPosition(i.WaypointsLL[j+1]));
-                    System.Diagnostics.Debug.WriteLine("{0} {1}", p1, p2);
                     e.Graphics.DrawLine(new Pen(c, 3), p1, p2);
                 }
                 int count = 1;
