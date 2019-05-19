@@ -20,6 +20,7 @@ namespace UAVCoordinators
 
         private void InitMap()
         {
+            Origin = new PointF(Map.Width / 2, Map.Height / 2);
             Map.MapProvider = GMap.NET.MapProviders.GoogleSatelliteMapProvider.Instance;
             Map.Overlays.Add(MapOverlay);
             Map.DragButton = MouseButtons.Left;
@@ -42,7 +43,6 @@ namespace UAVCoordinators
             InitialPosMarker = new GMarkerGoogle(Map.Position, GMarkerGoogleType.arrow);
             InitialPosMarker.IsVisible = false;
             MapOverlay.Markers.Add(InitialPosMarker);
-            Origin = new PointF(Map.Width/2, Map.Height/2);
         }
 
         private PointF Origin;
@@ -113,14 +113,14 @@ namespace UAVCoordinators
             {
                 Color c = i.UavColor;
 
-                for (int j = 0; j < i.WaypointsLL.Count - 1; j++)
+                for (int j = 0; j < i.WaypointsAP.Count - 1; j++)
                 {
-                    PointF p1 = ToPointF(PixelPosition(i.WaypointsLL[j])),
-                        p2 = ToPointF(PixelPosition(i.WaypointsLL[j+1]));
+                    PointF p1 = PixelPosition(i.WaypointsAP[j]),
+                        p2 = PixelPosition(i.WaypointsAP[j+1]);
                     e.Graphics.DrawLine(new Pen(c, 3), p1, p2);
                 }
                 int count = 1;
-                foreach (var wp in i.WaypointsLL)
+                foreach (var wp in i.WaypointsAP)
                     DrawWaypoint(count++, c, PixelPosition(wp), e.Graphics);
 
                 if (i.HasPosition)
@@ -131,7 +131,7 @@ namespace UAVCoordinators
             }
         }
 
-        private void DrawWaypoint(int wpNum, Color c, GPoint p, Graphics g)
+        private void DrawWaypoint(int wpNum, Color c, PointF p, Graphics g)
         {
             Bitmap bmp = new Bitmap(28, 28);
             p.X -= bmp.Width / 2;
@@ -150,7 +150,7 @@ namespace UAVCoordinators
 
             g1.DrawString(wpNum + "", f, new SolidBrush(Color.White), new PointF(14, 15), strFormat);
 
-            g.DrawImage(bmp, ToPointF(p));
+            g.DrawImage(bmp, p);
         }
 
         private PointLatLng LatLngPosition(GPoint pos) { return Map.FromLocalToLatLng((int)pos.X, (int)pos.Y); }

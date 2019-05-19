@@ -19,12 +19,19 @@ namespace UAVCoordinators
         private SizeF QSize; // Quadrant size
         private double[] GridCoordinates;
         private GMapOverlay GridOverlay = new GMapOverlay();
+        private List<Tuple<double, double>> Quadrants = new List<Tuple<double, double>>();
 
         private PointLatLng DiscreteLLPoint(PointLatLng p)
         {
             return new PointLatLng(
                 Ceiling(p.Lat / (QSize.Height * LatMRatio)) * QSize.Height * LatMRatio,
                 Floor(p.Lng / (QSize.Width * LngMRatio)) * QSize.Width * LngMRatio);
+        }
+
+        private Tuple<double, double> Quadrant(PointLatLng p)
+        {
+            return new Tuple<double, double>(
+                Ceiling(p.Lat / (QSize.Height * LatMRatio)), Floor(p.Lng / (QSize.Width * LngMRatio)));
         }
 
         private void InitGrid()
@@ -38,7 +45,8 @@ namespace UAVCoordinators
             {
                 while (first.Lng < GridCoordinates[3])
                 {
-                    DrawCell(first);
+                    Quadrants.Add(Quadrant(first));
+                    DrawCell(first, Quadrants.Contains(Quadrant(first)));
                     first.Lng += QSize.Width * LngMRatio;
                 }
 
@@ -54,7 +62,7 @@ namespace UAVCoordinators
         }
 
         // Draw a cell from left to right:
-        private void DrawCell(PointLatLng first)
+        private void DrawCell(PointLatLng first, bool hasq)
         {
             List<PointLatLng> points = new List<PointLatLng>();
 
@@ -66,11 +74,11 @@ namespace UAVCoordinators
             first.Lng -= QSize.Width * LngMRatio;
             points.Add(first);
 
-            DrawCellPolygon(new GMapPolygon(points, "a grid cell"));
+            DrawCellPolygon(new GMapPolygon(points, "a grid cell"), hasq);
         }
 
         // Draw a cell from right to left:
-        private void DrawCellR(PointLatLng first)
+        private void DrawCellR(PointLatLng first, bool hasq)
         {
             List<PointLatLng> points = new List<PointLatLng>();
 
@@ -82,15 +90,15 @@ namespace UAVCoordinators
             first.Lng += QSize.Width * LngMRatio;
             points.Add(first);
 
-            DrawCellPolygon(new GMapPolygon(points, "a grid cell"));
+            DrawCellPolygon(new GMapPolygon(points, "a grid cell"), hasq);
         }
 
-        private object[] QDrawingTools = new object[] { new Pen(Color.FromArgb(32, 255, 255, 255), 2), new SolidBrush(Color.Empty) };
+        private object[] QDrawingTools = new object[] { new Pen(Color.FromArgb(32, 255, 255, 255), 2), new SolidBrush(Color.Empty), new SolidBrush(Color.FromArgb(128, 0, 0, 0)) };
 
-        private void DrawCellPolygon(GMapPolygon cell)
+        private void DrawCellPolygon(GMapPolygon cell, bool hasq)
         {
             cell.Stroke = (Pen)QDrawingTools[0];
-            cell.Fill = (Brush)QDrawingTools[1];
+            cell.Fill = (Brush)QDrawingTools[hasq ? 1 : 2];
             GridOverlay.Polygons.Add(cell);
         }
 
@@ -120,7 +128,7 @@ namespace UAVCoordinators
 
                 while (first.Lng < GridCoordinates[3])
                 {
-                    DrawCell(first);
+                    DrawCell(first, false);
                     first.Lng += QSize.Width * LngMRatio;
                 }
 
@@ -134,7 +142,7 @@ namespace UAVCoordinators
             {
                 while (first.Lng < GridCoordinates[3])
                 {
-                    DrawCell(first);
+                    DrawCell(first, false);
                     first.Lng += QSize.Width * LngMRatio;
                 }
 
@@ -149,7 +157,7 @@ namespace UAVCoordinators
             {
                 while (first.Lng > newGridCoordinates[2])
                 {
-                    DrawCellR(first);
+                    DrawCellR(first, false);
                     first.Lng -= QSize.Width * LngMRatio;
                 }
 
@@ -165,7 +173,7 @@ namespace UAVCoordinators
             {
                 while (first.Lng < newGridCoordinates[3])
                 {
-                    DrawCell(first);
+                    DrawCell(first, false);
                     first.Lng += QSize.Width * LngMRatio;
                 }
 

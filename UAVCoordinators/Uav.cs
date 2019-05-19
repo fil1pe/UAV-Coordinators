@@ -7,7 +7,7 @@ namespace UAVCoordinators
 {
     internal partial class Uav
     {
-        private MainForm CoordinatorsForm;
+        private MainForm CoordinatorForm;
         public PointLatLng CurrentPosition;
         public PointF CurrentPixelPosition;
         private bool _hasPosition = false;
@@ -20,14 +20,14 @@ namespace UAVCoordinators
             {
                 _uavColor = UavColor;
                 DrawUavBitmap();
-                CoordinatorsForm.RefreshMap();
+                CoordinatorForm.RefreshMap();
             }
         }
 
         public Uav(Color c, MainForm coordinatorsForm)
         {
             _uavColor = c;
-            CoordinatorsForm = coordinatorsForm;
+            CoordinatorForm = coordinatorsForm;
             DrawUavBitmap();
         }
 
@@ -81,7 +81,23 @@ namespace UAVCoordinators
             set
             {
                 _waypointsLL = value;
-                CoordinatorsForm.RefreshMap();
+                _waypointsAP = null;
+                CoordinatorForm.RefreshMap();
+            }
+        }
+
+        private List<PointF> _waypointsAP;
+        public List<PointF> WaypointsAP
+        {
+            get
+            {
+                if(_waypointsAP == null)
+                {
+                    _waypointsAP = new List<PointF>();
+                    foreach (var i in _waypointsLL) _waypointsAP.Add(CoordinatorForm.AbstractPosition(i));
+                }
+
+                return _waypointsAP;
             }
         }
     }
