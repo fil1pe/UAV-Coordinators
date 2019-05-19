@@ -69,7 +69,7 @@ namespace UAVCoordinators
 
             // Set map position:
             string[] mapPos = settings[0].Split(',');
-            AuxPosition = Map.Position = new PointLatLng(ParseDouble(mapPos[0]), ParseDouble(mapPos[1]));
+            Map.Position = new PointLatLng(ParseDouble(mapPos[0]), ParseDouble(mapPos[1]));
             settings.RemoveAt(0);
 
             // Set map zoom:
@@ -81,7 +81,7 @@ namespace UAVCoordinators
             string[] qSize = settings[0].Split(',');
             QSize = new SizeF (ParseFloat(qSize[0]), ParseFloat(qSize[1]));
 
-            GPoint mapPixelPos = Map.MapProvider.Projection.FromLatLngToPixel(AuxPosition, (int)Map.Zoom);
+            GPoint mapPixelPos = Map.MapProvider.Projection.FromLatLngToPixel(Map.Position, (int)Map.Zoom);
 
             PointLatLng bottomLeftPoint = Map.MapProvider.Projection.FromPixelToLatLng(
                 new GPoint(mapPixelPos.X - Width / 2, mapPixelPos.Y + Height / 2),
@@ -193,17 +193,16 @@ namespace UAVCoordinators
             // Save current settings to file:
             List<string> settings = new List<string>();
             PointLatLng mapPos = Map.Position;
-            var dialogResult = MessageBox.Show("Do you want to save your workspace?", "Confirmation", MessageBoxButtons.YesNoCancel);
+            /*var dialogResult = MessageBox.Show("Do you want to save your workspace?", "Confirmation", MessageBoxButtons.YesNoCancel);
             if (dialogResult == DialogResult.Yes)
             {
-                mapPos = InitialPosMarker.Position;
-                //save variables
+                //
             }
             else if (dialogResult == DialogResult.Cancel)
             {
                 e.Cancel = true;
                 return;
-            }
+            }*/
             settings.Add(mapPos.Lat + "," + mapPos.Lng);
             settings.Add("" + Map.Zoom);
             settings.Add(QSize.Width + "," + QSize.Height);
