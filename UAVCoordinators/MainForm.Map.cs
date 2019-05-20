@@ -105,10 +105,6 @@ namespace UAVCoordinators
 
         private void PaintOnMap(object sender, PaintEventArgs e)
         {
-            PointF t1 = PixelPosition(new PointF(0, 0));
-            PointF t2 = PixelPosition(new PointF(20, 100));
-            e.Graphics.DrawLine(new Pen(Brushes.Aqua, 5), t1, t2);
-
             foreach (Uav i in Uavs)
             {
                 Color c = i.UavColor;
