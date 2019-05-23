@@ -36,7 +36,7 @@ namespace UAVCoordinators
             }
         }
 
-        private List<Uav> Uavs = new List<Uav>();
+        private List<Connection> Connections = new List<Connection>();
 
         public MainForm()
         {
@@ -55,12 +55,13 @@ namespace UAVCoordinators
                 TopBtnIcons.Add(new Bitmap(@"Images\top-btn-" + i + "-active.png"));
 
             // Examples:
-            Uavs.Add(new Uav(Color.Coral, this));
+            Connections.Add(new Uav(Color.Coral, this));
+            Connections.Add(new Uav(Color.Aqua, this));
             List<PointLatLng> wp = new List<PointLatLng>();
             wp.Add(new PointLatLng(-26.271, -48.8930));
             wp.Add(new PointLatLng(-26.2718, -48.8945));
             wp.Add(new PointLatLng(-26.2701, -48.8935));
-            Uavs[0].WaypointsLL = wp;
+            (Connections[0] as Uav).WaypointsLL = wp;
         }
 
         private void LoadSettings()
@@ -156,6 +157,7 @@ namespace UAVCoordinators
                 case 1:
                     Map.Visible = false;
                     DrawContainer("Connections", g);
+                    ShowConnections(g);
                     break;
                 case 2:
                     Map.Visible = true;
@@ -176,11 +178,12 @@ namespace UAVCoordinators
             DrawContainer(new PointF(BodyPadding.Width, TopPanelHeight + BodyPadding.Height), ClientSize.Width - 2 * BodyPadding.Width, ClientSize.Height - TopPanelHeight - 2 * BodyPadding.Height, s, g);
         }
 
-        private static void DrawContainer(PointF p1, int w, int h, string title, Graphics g)
+        private Font DefaultFont = new Font(new FontFamily("Arial"), 14);
+
+        private void DrawContainer(PointF p1, int w, int h, string title, Graphics g)
         {
-            Font f = new Font(new FontFamily("Arial"), 14);
-            SizeF strSize = g.MeasureString(title, f);
-            g.DrawString(title, f, new SolidBrush(Color.White), new PointF(p1.X, p1.Y - strSize.Height/2));
+            SizeF strSize = g.MeasureString(title, DefaultFont);
+            g.DrawString(title, DefaultFont, new SolidBrush(Color.White), new PointF(p1.X, p1.Y - strSize.Height/2));
             PointF p2 = new PointF(p1.X + strSize.Width, p1.Y),
                 p3 = new PointF(p1.X + w, p1.Y),
                 p4 = new PointF(p1.X + w, p1.Y + h),

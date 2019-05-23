@@ -5,11 +5,11 @@ using GMap.NET;
 
 namespace UAVCoordinators
 {
-    internal partial class Uav
+    internal partial class Uav : Connection
     {
         private MainForm CoordinatorForm;
         public PointLatLng CurrentPosition;
-        public PointF CurrentPixelPosition;
+        public PointF CurrentAPosition;
         private bool _hasPosition = false;
         public bool HasPosition { get { return _hasPosition; } }
         private Color _uavColor;
@@ -66,11 +66,22 @@ namespace UAVCoordinators
             {
                 _angle = value;
                 _uavBitmap = new Bitmap(66, 66);
-                Graphics g = Graphics.FromImage(UavBitmap);
+                var g = Graphics.FromImage(UavBitmap);
                 g.TranslateTransform(33, 33);
                 g.RotateTransform(-value);
                 g.TranslateTransform(-33, -33);
                 g.DrawImage(UavDrawingBmp, new Point(10, 8));
+            }
+        }
+
+        public Bitmap UavStaticBitmap
+        {
+            get
+            {
+                var bmp = new Bitmap(66, 66);
+                var g = Graphics.FromImage(bmp);
+                g.DrawImage(UavDrawingBmp, new Point(10, 8));
+                return bmp;
             }
         }
 
@@ -94,7 +105,7 @@ namespace UAVCoordinators
                 if(_waypointsAP == null)
                 {
                     _waypointsAP = new List<PointF>();
-                    foreach (var i in _waypointsLL) _waypointsAP.Add(CoordinatorForm.AbstractPosition(i));
+                    if (_waypointsLL != null) foreach (var i in _waypointsLL) _waypointsAP.Add(CoordinatorForm.AbstractPosition(i));
                 }
 
                 return _waypointsAP;

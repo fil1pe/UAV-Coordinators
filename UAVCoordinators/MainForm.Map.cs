@@ -105,7 +105,7 @@ namespace UAVCoordinators
 
         private void PaintOnMap(object sender, PaintEventArgs e)
         {
-            foreach (Uav i in Uavs)
+            foreach (Uav i in Connections)
             {
                 Color c = i.UavColor;
 
@@ -121,7 +121,7 @@ namespace UAVCoordinators
 
                 if (i.HasPosition)
                 {
-                    PointF p = i.CurrentPixelPosition;
+                    PointF p = PixelPosition(i.CurrentAPosition);
                     e.Graphics.DrawImage(i.UavBitmap, new PointF(p.X - 33, p.Y - 33));
                 }
             }
