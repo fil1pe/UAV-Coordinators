@@ -1,15 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Runtime.CompilerServices;
 using GMap.NET;
 
 namespace UAVCoordinators
 {
-    internal partial class Uav : Connection
+    internal class Uav : Connection
     {
-        private MainForm CoordinatorForm;
-        public PointLatLng CurrentPosition;
-        public PointF CurrentAPosition;
         private bool _hasPosition = false;
         public bool HasPosition { get { return _hasPosition; } }
         private Color _uavColor;
@@ -24,21 +22,60 @@ namespace UAVCoordinators
             }
         }
 
-        public Uav(Color c, MainForm coordinatorsForm)
+        private string _missionFileName = "";
+        public string MissionFileName
         {
+            [MethodImpl(MethodImplOptions.Synchronized)]
+            get { return _missionFileName; }
+            [MethodImpl(MethodImplOptions.Synchronized)]
+            set
+            {
+                _missionFileName = value;
+                CoordinatorForm.SendMissionToSup(this);
+            }
+        }
+        public string MissionCode = "";
+        private int _missionStatus = 0;
+        public int MissionStatus
+        {
+            [MethodImpl(MethodImplOptions.Synchronized)]
+            get { return _missionStatus; }
+            [MethodImpl(MethodImplOptions.Synchronized)]
+            set
+            {
+                _missionStatus = value;
+                CoordinatorForm.SendMissionStatusToSup(this);
+            }
+        }
+
+        public Uav(string conType, string ip, string port, string name, Color c, MainForm coordinatorsForm)
+        {
+            ConnectionType = conType;
+            Ip = ip;
+            Port = port;
+            Name = name;
             _uavColor = c;
             CoordinatorForm = coordinatorsForm;
             DrawUavBitmap();
         }
 
-        private Bitmap UavDrawingBmp;
+        private Bitmap _uavDrawingBmp;
+        public Bitmap UavDrawingBmp
+        {
+            get
+            {
+                Bitmap bmp = new Bitmap(66, 66);
+                Graphics.FromImage(bmp).DrawImage(_uavDrawingBmp, new Point(10, 8));
+                return bmp;
+            }
+        }
         private Bitmap _uavBitmap;
         public Bitmap UavBitmap { get { return _uavBitmap; } }
 
         private void DrawUavBitmap()
         {
-            UavDrawingBmp = new Bitmap(46, 50);
-            Graphics g = Graphics.FromImage(UavDrawingBmp);
+            _uavDrawingBmp = new Bitmap(46, 50);
+            Graphics g = Graphics.FromImage(_uavDrawingBmp);
             g.SmoothingMode = SmoothingMode.AntiAlias;
 
             Point p1 = new Point(0, 3), p2 = new Point(46, 25), p3 = new Point(5, 21);
@@ -55,7 +92,13 @@ namespace UAVCoordinators
 
             _uavBitmap = new Bitmap(66, 66);
             g = Graphics.FromImage(UavBitmap);
-            g.DrawImage(UavDrawingBmp, new Point(10, 8));
+            g.DrawImage(_uavDrawingBmp, new Point(10, 8));
+        }
+
+        public PointLatLng CurrentPosition;
+        public PointF CurrentPixelPosition
+        {
+            get { return CoordinatorForm.AbstractPosition(CurrentPosition); }
         }
 
         private float _angle = 0;
@@ -66,24 +109,15 @@ namespace UAVCoordinators
             {
                 _angle = value;
                 _uavBitmap = new Bitmap(66, 66);
-                var g = Graphics.FromImage(UavBitmap);
+                Graphics g = Graphics.FromImage(_uavBitmap);
                 g.TranslateTransform(33, 33);
                 g.RotateTransform(-value);
                 g.TranslateTransform(-33, -33);
-                g.DrawImage(UavDrawingBmp, new Point(10, 8));
+                g.DrawImage(_uavDrawingBmp, new Point(10, 8));
             }
         }
 
-        public Bitmap UavStaticBitmap
-        {
-            get
-            {
-                var bmp = new Bitmap(66, 66);
-                var g = Graphics.FromImage(bmp);
-                g.DrawImage(UavDrawingBmp, new Point(10, 8));
-                return bmp;
-            }
-        }
+        public int CurrentWpNum = -1;
 
         private List<PointLatLng> _waypointsLL;
         public List<PointLatLng> WaypointsLL
@@ -104,8 +138,9 @@ namespace UAVCoordinators
             {
                 if(_waypointsAP == null)
                 {
+                    if (_waypointsLL == null) return null;
                     _waypointsAP = new List<PointF>();
-                    if (_waypointsLL != null) foreach (var i in _waypointsLL) _waypointsAP.Add(CoordinatorForm.AbstractPosition(i));
+                    foreach (var i in _waypointsLL) _waypointsAP.Add(CoordinatorForm.AbstractPosition(i));
                 }
 
                 return _waypointsAP;

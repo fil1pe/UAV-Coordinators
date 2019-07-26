@@ -66,10 +66,10 @@ C:\Users\Filipe\Documents\UAV-Coordinators\UAVCoordinators\bin\Debug\Newtonsoft.
 C:\Users\Filipe\Documents\UAV-Coordinators\UAVCoordinators\bin\Debug\System.Data.SQLite.xml
 C:\Users\Filipe\Documents\UAV-Coordinators\UAVCoordinators\bin\Debug\System.Data.SQLite.dll.config
 C:\Users\Filipe\Documents\UAV-Coordinators\UAVCoordinators\obj\Debug\UAVCoordinators.csprojAssemblyReference.cache
-C:\Users\Filipe\Documents\UAV-Coordinators\UAVCoordinators\obj\Debug\UAVCoordinators.MainForm.resources
 C:\Users\Filipe\Documents\UAV-Coordinators\UAVCoordinators\obj\Debug\UAVCoordinators.Properties.Resources.resources
 C:\Users\Filipe\Documents\UAV-Coordinators\UAVCoordinators\obj\Debug\UAVCoordinators.csproj.GenerateResource.cache
 C:\Users\Filipe\Documents\UAV-Coordinators\UAVCoordinators\obj\Debug\UAVCoordinators.csproj.CoreCompileInputs.cache
 C:\Users\Filipe\Documents\UAV-Coordinators\UAVCoordinators\obj\Debug\UAVCoordinators.csproj.CopyComplete
 C:\Users\Filipe\Documents\UAV-Coordinators\UAVCoordinators\obj\Debug\UAVCoordinators.exe
 C:\Users\Filipe\Documents\UAV-Coordinators\UAVCoordinators\obj\Debug\UAVCoordinators.pdb
+C:\Users\Filipe\Documents\UAV-Coordinators\UAVCoordinators\obj\Debug\UAVCoordinators.MainForm.resources

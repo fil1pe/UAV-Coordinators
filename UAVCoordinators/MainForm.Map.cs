@@ -105,23 +105,29 @@ namespace UAVCoordinators
 
         private void PaintOnMap(object sender, PaintEventArgs e)
         {
-            foreach (Uav i in Connections)
+            foreach (var o_i in Connections)
             {
+                if (!(o_i is Uav)) continue;
+
+                Uav i = o_i as Uav;
                 Color c = i.UavColor;
 
-                for (int j = 0; j < i.WaypointsAP.Count - 1; j++)
+                if (i.WaypointsAP != null)
                 {
-                    PointF p1 = PixelPosition(i.WaypointsAP[j]),
-                        p2 = PixelPosition(i.WaypointsAP[j+1]);
-                    e.Graphics.DrawLine(new Pen(c, 3), p1, p2);
+                    for (int j = 0; j < i.WaypointsAP.Count - 1; j++)
+                    {
+                        PointF p1 = PixelPosition(i.WaypointsAP[j]),
+                            p2 = PixelPosition(i.WaypointsAP[j + 1]);
+                        e.Graphics.DrawLine(new Pen(c, 3), p1, p2);
+                    }
+                    int count = 1;
+                    foreach (var wp in i.WaypointsAP)
+                        DrawWaypoint(count++, c, PixelPosition(wp), e.Graphics);
                 }
-                int count = 1;
-                foreach (var wp in i.WaypointsAP)
-                    DrawWaypoint(count++, c, PixelPosition(wp), e.Graphics);
 
                 if (i.HasPosition)
                 {
-                    PointF p = PixelPosition(i.CurrentAPosition);
+                    PointF p = i.CurrentPixelPosition;
                     e.Graphics.DrawImage(i.UavBitmap, new PointF(p.X - 33, p.Y - 33));
                 }
             }

@@ -17,9 +17,13 @@ namespace UAVCoordinators
     {
         private const double LngMRatio = 1.00179 * 0.00001, LatMRatio = 8.98315 * 0.000001;
         private SizeF QSize; // Quadrant size
+        private SizeF QSizeBackup;
         private double[] GridCoordinates;
         private GMapOverlay GridOverlay = new GMapOverlay();
-        private List<Tuple<double, double>> Quadrants = new List<Tuple<double, double>>();
+        public List<Tuple<double, double>> Quadrants = new List<Tuple<double, double>>();
+        private Dictionary<PointLatLng, GMapPolygon> GridPolygons = new Dictionary<PointLatLng, GMapPolygon>();
+        private bool _areaDefined = false;
+        public bool AreaDefined { get { return _areaDefined; } }
 
         private PointLatLng DiscreteLLPoint(PointLatLng p)
         {
@@ -34,6 +38,98 @@ namespace UAVCoordinators
                 Ceiling(p.Lat / (QSize.Height * LatMRatio)), Floor(p.Lng / (QSize.Width * LngMRatio)));
         }
 
+        public void CompletelyRefreshGrid()
+        {
+            Map.Overlays.Remove(GridOverlay);
+            GridOverlay = new GMapOverlay();
+            InitGrid();
+        }
+
+        private bool GridPolygonsClickable = false;
+        private Panel QuadrantsSelectionPanel = new Panel();
+        private List<Tuple<double, double>> QuadrantsBackup;
+
+        private void StartQuadrantsSelection()
+        {
+            _areaDefined = false;
+            GridPolygonsClickable = true;
+            GridPolygons = new Dictionary<PointLatLng, GMapPolygon>();
+            QuadrantsBackup = Quadrants;
+            Quadrants = new List<Tuple<double, double>>();
+            CompletelyRefreshGrid();
+            Map.MouseDown += MouseDownOnGrid;
+            Map.MouseMove += MouseMoveOnGrid;
+            Controls.Add(QuadrantsSelectionPanel);
+            QuadrantsSelectionPanel.Visible = true;
+            QuadrantsSelectionPanel.Size = new Size(ClientSize.Width, 40);
+            QuadrantsSelectionPanel.Location = new Point(0, ClientSize.Height - QuadrantsSelectionPanel.Height);
+            QuadrantsSelectionPanel.BringToFront();
+            Map.Cursor = Cursors.Hand;
+        }
+
+        private void StopQuadrantsSelection(bool canceled)
+        {
+            Controls.Remove(QuadrantsSelectionPanel);
+            Map.MouseDown -= MouseDownOnGrid;
+            Map.MouseMove -= MouseMoveOnGrid;
+            if (canceled)
+            {
+                QSize = QSizeBackup;
+                Quadrants = QuadrantsBackup;
+            }
+            _areaDefined = Quadrants.Count > 0;
+            GridPolygonsClickable = false;
+            GridPolygons = new Dictionary<PointLatLng, GMapPolygon>();
+            CompletelyRefreshGrid();
+            Map.Cursor = Cursors.Arrow;
+        }
+
+        private PointLatLng MouseDownDiscretePos;
+        private object[] QDrawingTools = new object[] { new Pen(Color.FromArgb(32, 255, 255, 255), 2), new SolidBrush(Color.Empty), new SolidBrush(Color.FromArgb(128, 0, 0, 0)), new SolidBrush(Color.FromArgb(80, Color.HotPink)) };
+
+        private void MouseDownOnGrid(object sender, MouseEventArgs e)
+        {
+            MouseDownDiscretePos = DiscreteLLPoint(Map.FromLocalToLatLng(e.X, e.Y));
+            MouseMoveOnGrid(sender, e);
+        }
+
+        private void MouseMoveOnGrid(object sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Right) return;
+
+            var mouseDownPos = new PointLatLng(MouseDownDiscretePos.Lat - QSize.Height*LatMRatio/2, MouseDownDiscretePos.Lng + QSize.Width*LngMRatio/2);
+            var mouseCurPos = DiscreteLLPoint(Map.FromLocalToLatLng(e.X, e.Y));
+
+            if (mouseCurPos == MouseDownDiscretePos)
+            {
+                GridPolygons[mouseCurPos].Fill = (SolidBrush)QDrawingTools[3];
+                mouseCurPos = new PointLatLng(mouseCurPos.Lat - QSize.Height*LatMRatio/2, mouseCurPos.Lng + QSize.Width*LngMRatio/2);
+                var quadrant = Quadrant(mouseCurPos);
+                if (!Quadrants.Contains(quadrant)) Quadrants.Add(quadrant);
+                return;
+            }
+
+            mouseCurPos = new PointLatLng(mouseCurPos.Lat - QSize.Height*LatMRatio/2, mouseCurPos.Lng + QSize.Width*LngMRatio/2);
+
+            var first = new PointLatLng(Max(mouseDownPos.Lat, mouseCurPos.Lat), Min(mouseDownPos.Lng, mouseCurPos.Lng));
+            var temp = first;
+            var last = new PointLatLng(Min(mouseDownPos.Lat, mouseCurPos.Lat), Max(mouseDownPos.Lng, mouseCurPos.Lng));
+
+            while (first.Lat > last.Lat)
+            {
+                while (first.Lng < last.Lng)
+                {
+                    GridPolygons[DiscreteLLPoint(first)].Fill = (SolidBrush)QDrawingTools[3];
+                    var quadrant = Quadrant(first);
+                    if (!Quadrants.Contains(quadrant)) Quadrants.Add(quadrant);
+                    first.Lng += QSize.Width * LngMRatio;
+                }
+
+                first.Lng = temp.Lng;
+                first.Lat -= QSize.Height * LatMRatio;
+            }
+        }
+
         private void InitGrid()
         {
             Map.Overlays.Add(GridOverlay);
@@ -45,8 +141,9 @@ namespace UAVCoordinators
             {
                 while (first.Lng < GridCoordinates[3])
                 {
-                    Quadrants.Add(Quadrant(first));
-                    DrawCell(first, Quadrants.Contains(Quadrant(first)));
+                    DrawCell(first, Quadrants.Contains(Quadrant(
+                        new PointLatLng(first.Lat - QSize.Height*LatMRatio/2, first.Lng + QSize.Width*LngMRatio/2)    
+                    )));
                     first.Lng += QSize.Width * LngMRatio;
                 }
 
@@ -74,7 +171,11 @@ namespace UAVCoordinators
             first.Lng -= QSize.Width * LngMRatio;
             points.Add(first);
 
-            DrawCellPolygon(new GMapPolygon(points, "a grid cell"), hasq);
+            var pos = DiscreteLLPoint(new PointLatLng(points[0].Lat/2 + points[2].Lat/2, points[0].Lng/2 + points[1].Lng/2));
+
+            var polygon = new GMapPolygon(points, "a grid cell");
+            DrawCellPolygon(polygon, hasq);
+            GridPolygons.Add(pos, polygon);
         }
 
         // Draw a cell from right to left:
@@ -90,15 +191,18 @@ namespace UAVCoordinators
             first.Lng += QSize.Width * LngMRatio;
             points.Add(first);
 
-            DrawCellPolygon(new GMapPolygon(points, "a grid cell"), hasq);
+            var pos = DiscreteLLPoint(new PointLatLng(points[0].Lat / 2 + points[2].Lat / 2, points[0].Lng / 2 + points[1].Lng / 2));
+
+            var polygon = new GMapPolygon(points, "a grid cell");
+            DrawCellPolygon(polygon, hasq);
+            GridPolygons.Add(pos, polygon);
         }
-
-        private object[] QDrawingTools = new object[] { new Pen(Color.FromArgb(32, 255, 255, 255), 2), new SolidBrush(Color.Empty), new SolidBrush(Color.FromArgb(128, 0, 0, 0)) };
-
+        
         private void DrawCellPolygon(GMapPolygon cell, bool hasq)
         {
+            cell.IsHitTestVisible = GridPolygonsClickable;
             cell.Stroke = (Pen)QDrawingTools[0];
-            cell.Fill = (Brush)QDrawingTools[hasq ? 1 : 2];
+            cell.Fill = (Brush)QDrawingTools[hasq || !_areaDefined ? 1 : 2];
             GridOverlay.Polygons.Add(cell);
         }
 

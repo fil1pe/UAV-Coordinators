@@ -57,7 +57,7 @@
             this.ClientSize = new System.Drawing.Size(384, 361);
             this.Controls.Add(this.Map);
             this.Name = "Form1";
-            this.Text = "UAV Coordinators";
+            this.Text = "UAV Coordinator";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ClosingForm);
             this.ResumeLayout(false);
 
