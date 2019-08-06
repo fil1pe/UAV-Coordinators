@@ -95,10 +95,31 @@ namespace UAVCoordinators
             g.DrawImage(_uavDrawingBmp, new Point(10, 8));
         }
 
-        public PointLatLng CurrentPosition;
+        private PointLatLng _currentPosition;
+        public PointLatLng CurrentPosition
+        {
+            get { return _currentPosition; }
+            set
+            {
+                _currentPosition = value;
+                _hasPosition = true;
+                HasPixPosition = false;
+                CoordinatorForm.RefreshMap();
+            }
+        }
+        private bool HasPixPosition = false;
+        private PointF _currentPixelPosition;
         public PointF CurrentPixelPosition
         {
-            get { return CoordinatorForm.AbstractPosition(CurrentPosition); }
+            get
+            {
+                if (!HasPixPosition)
+                {
+                    _currentPixelPosition = CoordinatorForm.AbstractPosition(_currentPosition);
+                    HasPixPosition = true;
+                }
+                return _currentPixelPosition;
+            }
         }
 
         private float _angle = 0;

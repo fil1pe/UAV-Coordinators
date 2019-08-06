@@ -124,10 +124,16 @@ namespace UAVCoordinators
                     foreach (var wp in i.WaypointsAP)
                         DrawWaypoint(count++, c, PixelPosition(wp), e.Graphics);
                 }
+            }
+            foreach(var o_i in Connections)
+            {
+                if (!(o_i is Uav)) continue;
+
+                Uav i = o_i as Uav;
 
                 if (i.HasPosition)
                 {
-                    PointF p = i.CurrentPixelPosition;
+                    PointF p = PixelPosition(i.CurrentPixelPosition);
                     e.Graphics.DrawImage(i.UavBitmap, new PointF(p.X - 33, p.Y - 33));
                 }
             }

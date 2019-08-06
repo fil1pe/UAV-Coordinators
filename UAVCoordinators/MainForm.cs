@@ -8,6 +8,8 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using GMap.NET;
+using GMap.NET.WindowsForms;
+using GMap.NET.WindowsForms.Markers;
 using static UAVCoordinators.Utils;
 
 namespace UAVCoordinators
@@ -110,6 +112,15 @@ namespace UAVCoordinators
                     Thread.Sleep(100);
                 }
             })).Start();
+
+            // Example
+            foreach(var i in Connections)
+            {
+                if (!(i is Uav)) continue;
+                Uav j = i as Uav;
+                j.CurrentPosition = new PointLatLng(-35.363261, 149.165236);
+                break;
+            }
         }
         
         private PointLatLng DefinedMapPosition;
