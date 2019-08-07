@@ -118,7 +118,9 @@ namespace UAVCoordinators
             {
                 if (!(i is Uav)) continue;
                 Uav j = i as Uav;
-                j.CurrentPosition = new PointLatLng(-35.363261, 149.165236);
+                if (j.Name != "UAV 2") continue;
+                j.CurrentPosition = new PointLatLng(-35.362988, 149.1651245);
+                j.Angle = 45f;
                 break;
             }
         }

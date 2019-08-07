@@ -1,3 +1,3 @@
-UAV 1,192.168.0.1,1002,0,-16776961,C:\Users\Filipe\Documents\UAV-Coordinators\UAVCoordinators\bin\Debug\Missions\Sample\mission1.txt,2AHVM0W25RS6PUEX
+UAV 1,192.168.0.1,1002,0,-16776961,,
 UAV 2,192.168.0.1,1003,0,-16741493,C:\Users\Filipe\Documents\UAV-Coordinators\UAVCoordinators\bin\Debug\Missions\Sample\mission3.txt,121EO17K0I7AWL86
 Coordinator,192.168.0.1,11111,2,0,,
