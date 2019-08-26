@@ -110,7 +110,7 @@ namespace UAVCoordinators
                     }
                     ConnectionsListMutex.ReleaseMutex();
                     Thread.Sleep(100);
-                }
+                 }
             })).Start();
 
             // Example
@@ -199,7 +199,11 @@ namespace UAVCoordinators
             foreach (var i in conns)
             {
                 string[] info = i.Split(',');
-                AddConnection(info[0], info[1], info[2], int.Parse(info[3]), Color.FromArgb(int.Parse(info[4])), info[5], info[6]);
+                try
+                {
+                    AddConnection(info[0], info[1], info[2], int.Parse(info[3]), Color.FromArgb(int.Parse(info[4])), info[5], info[6]);
+                }
+                catch (Exception) { }
             }
         }
 
